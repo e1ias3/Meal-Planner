@@ -119,7 +119,7 @@
 
 <script>
 const STORE_KEY = 'household-meal-planner-data';
-const DEFAULT_CATEGORIES = ['Produce','Dairy & Eggs','Meat & Seafood','Bakery','Frozen','Pantry','Beverages','Household','Other'];
+const DEFAULT_CATEGORIES = ['Produce','Dairy & Eggs','Meat & Seafood','Snacks','Frozen','Pantry','Beverages','Household','Other'];
 const UNITS = ['','pc','oz','lb','g','kg','cup','tbsp','tsp','ml','l','can','pkg','bunch'];
 
 let state = null;
