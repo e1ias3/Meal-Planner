@@ -6,6 +6,7 @@
 <title>Household Meals</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --cream:#FAF7F1;
@@ -44,6 +45,7 @@
   .empty strong{display:block; color:var(--ink); font-family:'Fraunces',serif; font-size:17px; font-weight:600; margin-bottom:6px;}
 
   .fab{position:fixed; left:50%; transform:translateX(-50%); bottom:20px; max-width:488px; width:calc(100% - 32px); background:var(--sage); color:#fff; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:500; cursor:pointer;}
+  #status-line{position:fixed; top:0; left:0; right:0; z-index:30; background:var(--sage-dark); color:#fff; font-size:12px; text-align:center; padding:4px 0; opacity:0.95;}
   .fab:active{background:var(--sage-dark);}
 
   .card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:10px;}
@@ -118,7 +120,14 @@
 <div id="modal-root"></div>
 
 <script>
-const STORE_KEY = 'household-meal-planner-data';
+// ==== FILL THESE IN from Supabase → Project Settings → API ====
+const SUPABASE_URL = 'https://nijfbkcainzpvslygfow.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pamZia2NhaW56cHZzbHlnZm93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDMwNDIsImV4cCI6MjEwNDIxOTA0Mn0.JlCJEgwgYCEnubDv5d4rwjYaDI72PzkmQPuMk2fpCvU';
+// ================================================================
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const ROW_ID = 'main';
+
 const DEFAULT_CATEGORIES = ['Produce','Dairy & Eggs','Meat & Seafood','Snacks','Frozen','Pantry','Beverages','Household','Other'];
 const UNITS = ['','pc','oz','lb','g','kg','cup','tbsp','tsp','ml','l','can','pkg','bunch'];
 
@@ -161,17 +170,23 @@ function defaultState(){
 
 async function loadState(){
   try{
-    const res = await window.storage.get(STORE_KEY, true);
-    if(res && res.value){
-      state = JSON.parse(res.value);
+    const { data, error } = await supabase
+      .from('household_data')
+      .select('value')
+      .eq('id', ROW_ID)
+      .maybeSingle();
+    if(error) throw error;
+    if(data && data.value){
+      state = data.value;
       ensurePlanCoversTwoWeeks();
     } else {
       state = defaultState();
       await persistNow();
     }
   }catch(e){
+    console.error('Load failed:', e);
+    updateStatus('Could not connect — check Supabase URL/key');
     state = defaultState();
-    await persistNow();
   }
   render();
 }
@@ -196,9 +211,13 @@ async function persistNow(){
   isSaving = true;
   updateStatus('Saving…');
   try{
-    await window.storage.set(STORE_KEY, JSON.stringify(state), true);
+    const { error } = await supabase
+      .from('household_data')
+      .upsert({ id: ROW_ID, value: state, updated_at: new Date().toISOString() });
+    if(error) throw error;
     updateStatus('Synced');
   }catch(e){
+    console.error('Save failed:', e);
     updateStatus('Save failed — will retry');
     setTimeout(scheduleSave, 2000);
   }
@@ -214,12 +233,17 @@ function updateStatus(text){
 setInterval(async ()=>{
   if(document.querySelector('.modal-bg')) return; // don't clobber an open edit
   try{
-    const res = await window.storage.get(STORE_KEY, true);
-    if(res && res.value){
-      const incoming = JSON.stringify(JSON.parse(res.value));
+    const { data, error } = await supabase
+      .from('household_data')
+      .select('value')
+      .eq('id', ROW_ID)
+      .maybeSingle();
+    if(error) throw error;
+    if(data && data.value){
+      const incoming = JSON.stringify(data.value);
       const current = JSON.stringify(state);
       if(incoming !== current){
-        state = JSON.parse(res.value);
+        state = data.value;
         ensurePlanCoversTwoWeeks();
         render();
         updateStatus('Updated from another device');
