@@ -126,6 +126,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ================================================================
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.onerror = (msg) => alert('ERROR: ' + msg);
 const ROW_ID = 'main';
 
 const DEFAULT_CATEGORIES = ['Produce','Dairy & Eggs','Meat & Seafood','Snacks','Frozen','Pantry','Beverages','Household','Other'];
