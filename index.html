@@ -125,8 +125,8 @@ const SUPABASE_URL = 'https://nijfbkcainzpvslygfow.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pamZia2NhaW56cHZzbHlnZm93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NDMwNDIsImV4cCI6MjEwNDIxOTA0Mn0.JlCJEgwgYCEnubDv5d4rwjYaDI72PzkmQPuMk2fpCvU';
 // ================================================================
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window.onerror = (msg) => alert('ERROR: ' + msg);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ROW_ID = 'main';
 
 const DEFAULT_CATEGORIES = ['Produce','Dairy & Eggs','Meat & Seafood','Snacks','Frozen','Pantry','Beverages','Household','Other'];
